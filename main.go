@@ -17,7 +17,7 @@ import (
 )
 
 func Unseal(password string, sealed string) ([]byte, error) {
-	data, err := b64.URLEncoding.DecodeString(sealed)
+	data, err := b64.RawURLEncoding.DecodeString(sealed)
 	if err != nil {
 		log.Fatalf("error while parsing b64: %s", err)
 	}
@@ -39,7 +39,7 @@ func Unseal(password string, sealed string) ([]byte, error) {
 }
 
 func Seal(password string, data []byte) string {
-	return b64.URLEncoding.EncodeToString(SealBytes(password, data))
+	return b64.RawURLEncoding.EncodeToString(SealBytes(password, data))
 }
 
 func SealBytes(password string, data []byte) []byte {
