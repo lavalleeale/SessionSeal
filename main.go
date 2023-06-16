@@ -19,7 +19,10 @@ import (
 func Unseal(password string, sealed string) ([]byte, error) {
 	data, err := b64.RawURLEncoding.DecodeString(sealed)
 	if err != nil {
-		log.Fatalf("error while parsing b64: %s", err)
+		return nil, err
+	}
+	if len(data) < 48+aes.BlockSize {
+		return nil, fmt.Errorf("invalid data length")
 	}
 	encSalt := data[0:8]
 	signSalt := data[8:16]
@@ -29,7 +32,10 @@ func Unseal(password string, sealed string) ([]byte, error) {
 	key := GenerateAESKey(password, encSalt)
 	hmacKey := GenerateKey(password, signSalt)
 	mac := hmac.New(sha256.New, hmacKey)
-	mac.Write(encrypted)
+	_, err = mac.Write(encrypted)
+	if err != nil {
+		return nil, err
+	}
 	if hmac.Equal(mac.Sum(nil), expectedMAC) {
 		decrypted := Decrypt(key, iv, encrypted)
 		return bytes.Trim(decrypted, "\x00"), nil

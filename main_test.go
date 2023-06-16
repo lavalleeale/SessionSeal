@@ -16,6 +16,23 @@ type TestData struct {
 	Extra bool
 }
 
+func TestInvalidLength(t *testing.T) {
+	for i := 0; i < 48+aes.BlockSize; i++ {
+		randomBytes := sessionseal.RandomBytes(i)
+		_, err := sessionseal.Unseal("test", b64.RawURLEncoding.EncodeToString(randomBytes))
+		if err == nil || err.Error() != "invalid data length" {
+			t.Errorf(err.Error())
+		}
+	}
+}
+
+func TestInvalidBase64(t *testing.T) {
+	_, err := sessionseal.Unseal("test", "invalid!")
+	if err == nil || err.Error() != "illegal base64 data at input byte 7" {
+		t.Errorf(err.Error())
+	}
+}
+
 func TestInvalid(t *testing.T) {
 	original := "test"
 	data := []byte(original)
